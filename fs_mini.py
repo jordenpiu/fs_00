@@ -24,52 +24,58 @@ train_label = pd.read_csv('Ravi/train.csv')
 val_label = pd.read_csv('Ravi/val.csv')
 test_label = pd.read_csv('Ravi/test.csv')
 
-train_set = []
+class train_set:
+    train_images = []
 
-PATH = 'images/images'
+    PATH = 'images/images'
 
-for name, df in train_label['filename'].groupby(train_label['label']):
-    images = []
-    for image_name in df.values:
-        image = imread(os.path.join(PATH, image_name))
-        image = (imresize(image, (84,84)) * 255.).astype(np.uint8)
-        images.append(image)
+    for name, df in train_label['filename'].groupby(train_label['label']):
+        images = []
+        for image_name in df.values:
+            image = imread(os.path.join(PATH, image_name))
+            image = (imresize(image, (84,84)) * 255.).astype(np.uint8)
+            images.append(image)
 
-    train_set.append(images)
+        train_images.append(images)
+    np.save('mini_train', train_images)
 
-val_set = []
+class val_set:
+    val_images = []
 
-PATH = 'images/images'
+    PATH = 'images/images'
 
-for name, df in val_label['filename'].groupby(val_label['label']):
-    images = []
-    for image_name in df.values:
-        image = imread(os.path.join(PATH, image_name))
-        image = (imresize(image, (84,84)) * 255.).astype(np.uint8)
-        images.append(image)
+    for name, df in val_label['filename'].groupby(val_label['label']):
+        images = []
+        for image_name in df.values:
+            image = imread(os.path.join(PATH, image_name))
+            image = (imresize(image, (84,84)) * 255.).astype(np.uint8)
+            images.append(image)
 
-    val_set.append(images)
+        val_images.append(images)
+    np.save('mini_val', val_images)
 
-test_set = []
+class test_set:
+    test_images = []
 
-PATH = 'images/images'
+    PATH = 'images/images'
 
-for name, df in test_label['filename'].groupby(test_label['label']):
-    images = []
-    for image_name in df.values:
-        image = imread(os.path.join(PATH, image_name))
-        image = (imresize(image, (84,84)) * 255.).astype(np.uint8)
-        images.append(image)
+    for name, df in test_label['filename'].groupby(test_label['label']):
+        images = []
+        for image_name in df.values:
+            image = imread(os.path.join(PATH, image_name))
+            image = (imresize(image, (84,84)) * 255.).astype(np.uint8)
+            images.append(image)
 
-    test_set.append(images)
+        test_images.append(images)
 
+    np.save('mini_test', test_images)
 #train_set = np.array(train_set)
 #val_set = np.array(val_set)
 #test_set = np.array(test_set)
 
-np.save('mini_train', train_set)
-np.save('mini_val', val_set)
-np.save('mini_test', test_set)
+
+
+
 
 class PrototypicalNetworks(nn.Module):
     def __init__(self, backbone: nn.Module):
@@ -107,7 +113,7 @@ class PrototypicalNetworks(nn.Module):
         return scores
 
 
-convolutional_network = resnet18(pretrained=False)
+convolutional_network = resnet18(pretrained=True)
 convolutional_network.fc = nn.Flatten()
 print(convolutional_network)
 
@@ -120,7 +126,7 @@ N_QUERY = 10 # Number of images per class in the query set
 N_EVALUATION_TASKS = 100
 
 # The sampler needs a dataset with a "labels" field. Check the code if you have any doubt!
-test_set.labels = [instance[1] for instance in test_set._flat_character_images]  #error: AttributeError: 'list' object has no attribute '_flat_character_images'
+test_set.labels = [instance[1] for instance in test_set._flat_character_images]
 test_sampler = TaskSampler(
     test_set, n_way=N_WAY, n_shot=N_SHOT, n_query=N_QUERY, n_tasks=N_EVALUATION_TASKS
 )
@@ -211,5 +217,6 @@ def evaluate(data_loader: DataLoader):
 
 
 evaluate(test_loader)
+
 
 
